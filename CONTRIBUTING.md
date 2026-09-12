@@ -31,6 +31,11 @@ Please follow common conventions for Open Source projects, f.i. align to Electro
 
 ## Proof of humanity
 
+The lightweight proof-of-humanity registry proof of concept and its proposed
+signed-commit challenge flow are documented in [`poh/README.md`](poh/README.md).
+It deliberately records only public profile claims; do not add challenge
+answers or personal contact details to Git.
+
 It is imperative that you are ready at any time to show your PR's correct
 functionality, be able to explain how it works and demo in live mode a run of
 qtop with colored output that has no issues of correctness (read: ansi codes
