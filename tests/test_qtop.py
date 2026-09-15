@@ -508,3 +508,15 @@ def test_get_date_obj_from_str(s, now, day_meant):
     at 22:10 at night, the user inputs again 21:00 (the same day is implied)
     """
     assert get_date_obj_from_str(s, now).day == day_meant
+
+
+@pytest.mark.parametrize("value", ("", "123", "not-a-date"))
+def test_get_date_obj_from_str_rejects_invalid_replay_start(value):
+    with pytest.raises(ValueError, match="Replay start time must use"):
+        get_date_obj_from_str(value, datetime.datetime.now())
+
+
+@pytest.mark.parametrize("value", ("", "5", "five minutes", "1.5h", None))
+def test_parse_time_input_rejects_invalid_duration(value):
+    with pytest.raises(ValueError, match="Time input must be"):
+        qtop_module.fileutils.parse_time_input(value)

@@ -188,7 +188,7 @@ def get_date_obj_from_str(s, now):
         _inp_datetime = datetime.datetime.strptime(s, "%m%dT%H%M")
         inp_datetime = _inp_datetime.replace(year=now.year, second=0)
     else:
-        logging.critical("The datetime format provided is incorrect.\nTry one of the formats: yyyymmddTHHMMSS, HHMM, mmddTHHMM.")
+        raise ValueError("Replay start time must use yyyymmddTHHMMSS, HHMM, or mmddTHHMM format")
     return inp_datetime
 
 
@@ -865,6 +865,8 @@ def attempt_faster_xml_parsing(config):
 
 
 def init_dirs(args, _savepath):
+    if args.SOURCEDIR and not os.path.isdir(args.SOURCEDIR):
+        raise CommandLineError("Source directory does not exist or is not a directory: %s" % args.SOURCEDIR)
     args.SOURCEDIR = realpath(args.SOURCEDIR) if args.SOURCEDIR else None
     logging.debug("User-defined source directory: %s" % args.SOURCEDIR)
     args.workdir = args.SOURCEDIR or _savepath
@@ -2256,8 +2258,11 @@ def pick_frames_to_replay(_savepath):
     if len(args.REPLAY) == 1:  # add default arg, if no replay duration is set in the cmdline
         args.REPLAY.append("2m")
 
-    time_delta = fileutils.get_timedelta(fileutils.parse_time_input(args.REPLAY[1]))
-    watch_start_datetime_obj = get_date_obj_from_str(args.REPLAY[0], datetime.datetime.now())
+    try:
+        time_delta = fileutils.get_timedelta(fileutils.parse_time_input(args.REPLAY[1]))
+        watch_start_datetime_obj = get_date_obj_from_str(args.REPLAY[0], datetime.datetime.now())
+    except (TypeError, ValueError) as error:
+        raise CommandLineError("Invalid replay value: %s" % error)
     REC_FP_ALL = _savepath + "/*_partview*.out"
     rec_files = glob.iglob(REC_FP_ALL)
     useful_frames = []
@@ -2384,6 +2389,10 @@ class SchedulerNotSpecified(Exception):
     pass
 
 
+class CommandLineError(Exception):
+    """A concise error caused by a validly parsed, but unusable, CLI option."""
+
+
 class InvalidScheduler(Exception):
     pass
 
@@ -2399,7 +2408,7 @@ def cli_error_message(error):
 def cli_main():
     try:
         return main() or 0
-    except (InvalidScheduler, NoSchedulerFound, SchedulerNotSpecified) as error:
+    except (CommandLineError, InvalidScheduler, NoSchedulerFound, SchedulerNotSpecified) as error:
         message = cli_error_message(error)
         if message:
             sys.stderr.write("%s\n" % message)

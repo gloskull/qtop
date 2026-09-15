@@ -68,3 +68,21 @@ def test_no_scheduler_message_is_not_duplicated(tmp_path, module):
     assert result.returncode == 1
     assert output.count("No suitable scheduler was found") == 1
     assert "Traceback" not in output
+
+
+@pytest.mark.parametrize(
+    "args, expected",
+    (
+        (("-R", "123"), "Invalid replay value: Replay start time must use"),
+        (("-R", "1200", "bad"), "Invalid replay value: Time input must be"),
+        (("-s", "/does/not/exist"), "Source directory does not exist or is not a directory"),
+    ),
+)
+@pytest.mark.parametrize("module", ("qtop_py.cli", "qtop_py.qtop"))
+def test_invalid_parsed_cli_values_are_concise(tmp_path, module, args, expected):
+    result = run_cli(tmp_path, module, *args)
+    output = result.stdout + result.stderr
+
+    assert result.returncode == 1
+    assert expected in output
+    assert "Traceback" not in output
