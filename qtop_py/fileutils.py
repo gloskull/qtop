@@ -139,16 +139,18 @@ def parse_time_input(_time):
     """
     the func accepts a _time str in either (h)ours, (m)inutes, or (s)econds, using the respective suffix,
     e.g. '5h', or '10m', or '30s'
-    A tuple is returned, e.g. (5, 'hours')
+    A ``datetime.timedelta`` keyword dictionary is returned, e.g.
+    ``{'hours': 5}``.
     """
-    assert _time.endswith(("h", "m", "s"))
+    if not isinstance(_time, str) or not _time.endswith(("h", "m", "s")):
+        raise ValueError("Time input must be a number followed by h, m, or s")
     try:
-        int(_time[:-1])
+        quantity = int(_time[:-1])
     except ValueError:
-        logging.critical("Time input given must be a number followed by the letter h/m/s. Exiting.")
+        raise ValueError("Time input must be a number followed by h, m, or s")
 
-    quantity, user_unit_suffix = _time[:-1], _time[-1]
+    user_unit_suffix = _time[-1]
     units = {"m": "minutes", "s": "seconds", "h": "hours"}
     user_unit = units[user_unit_suffix]
 
-    return {user_unit: int(quantity)}
+    return {user_unit: quantity}

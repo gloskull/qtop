@@ -143,6 +143,7 @@ def parse_qtop_cmdline_args():
         "-R",
         "--replay",
         dest="REPLAY",
+        nargs="*",
         help="""instant replay from a specific moment in time for the
                            cluster, and for a specified duration. The value
                            provided should be in either of the following formats: 
@@ -189,6 +190,11 @@ def parse_qtop_cmdline_args():
     # parser.add_argument("-f", "--setCOLORMAPFILE", action="store", dest="COLORFILE")  # TODO
 
     args = parser.parse_args()
+    if args.REPLAY is not None:
+        if len(args.REPLAY) > 2:
+            parser.error("argument -R/--replay accepts at most a start time and a duration")
+        if not args.REPLAY:
+            args.REPLAY = [0]
     return args
 
 
